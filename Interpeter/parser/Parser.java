@@ -15,6 +15,7 @@ import lexer.Scanner;
 import syntaxtree.Expr;
 import logger.ErrorHandler;
 
+
 import java.util.Arrays;
 
 public class Parser {
@@ -32,6 +33,26 @@ public class Parser {
 	}
 
 	private Expr expression(){
+		return assignment();
+	}
+
+	private Expr assignment() {
+    	Expr expr = equality();
+
+    	if (match(EQUAL)) {
+      		Token equals = previous();
+      		Expr value = assignment();
+
+      		if (expr instanceof Expr.Variable) {
+        		Token name = ((Expr.Variable)expr).name;
+        		return new Expr.Assign(name, value);
+      		}
+
+      		error(equals, "Invalid assignment target.");
+    		}
+
+    	return expr;
+  	}
 
 	}
 
@@ -49,6 +70,19 @@ public class Parser {
 
 		return expr;
 	}
+
+
+	private List<Stmt> block() {
+    	List<Stmt> statements = new ArrayList<>();
+
+    	while (!check(RIGHT_BRACE) && !isAtEnd()) {
+      		statements.add(declaration());
+    	}
+
+    	consume(RIGHT_BRACE, "Expect '}' after block.");
+    	return statements;
+  	}
+
 
 	// != , ==
 	private Expr equality(){
@@ -144,6 +178,7 @@ public class Parser {
 	}
 
 
+
 	// the while loop
 	private Stmt whileStatement(){
 		expect(Tag.LPAREN);
@@ -195,6 +230,7 @@ public class Parser {
 		}
 		return expr;
   }
+
 
 	public void update(){
 		token = next;
