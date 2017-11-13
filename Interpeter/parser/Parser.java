@@ -140,6 +140,7 @@ public class Parser {
 		ErrorHandler.error(next.line, "Invalid expression");
 		System.exit(1);
 	}
+
 	//if
 	private Stmt ifStatement(){
 		this.expect(Tag.LPAREN);
@@ -178,6 +179,7 @@ public class Parser {
 		}
 		return expr;
 	}
+
 
 
 

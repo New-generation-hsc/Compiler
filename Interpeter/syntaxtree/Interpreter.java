@@ -46,7 +46,7 @@ class Interpreter implements Expr.Visitor<Object> {
 	@Override
 	public Object visitLiteralExpr(Expr.Literal expr){
 		return expr.value;
-	}
+
 	@Override
 	public Object visitLogicalExpr(Expr.Logical expr){
 		Object left=evaluate(expr.left);
