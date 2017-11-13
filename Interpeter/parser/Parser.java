@@ -15,6 +15,8 @@ import lexer.Scanner;
 import syntaxtree.Expr;
 import logger.ErrorHandler;
 
+import java.util.Arrays;
+
 public class Parser {
 
 	private Token token; // the current token that need to parse
@@ -141,6 +143,20 @@ public class Parser {
 		System.exit(1);
 	}
 
+
+	// the while loop
+	private Stmt whileStatement(){
+		expect(Tag.LPAREN);
+		this.update();
+		System.out.println("accept the token -> " + token);
+		Expr condition = expression();
+		expect(Tag.RPAREN);
+		this.update();
+		System.out.println("accept the token -> " + token);
+		Stmt body = statement();
+		return new Stmt.While(condition.condition);
+	}
+
 	//if
 	private Stmt ifStatement(){
 		this.expect(Tag.LPAREN);
@@ -178,10 +194,7 @@ public class Parser {
 			expr=new Expr.Logical(expr,operator,right);
 		}
 		return expr;
-	}
-
-
-
+  }
 
 	public void update(){
 		token = next;
