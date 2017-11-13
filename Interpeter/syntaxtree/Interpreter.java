@@ -4,6 +4,7 @@ import exception.RuntimeError;
 
 class Interpreter implements Expr.Visitor<Object> {
 
+
 	private Environment environment = new Environment();
 
 	public Object interpret(Expr expression){
@@ -48,7 +49,7 @@ class Interpreter implements Expr.Visitor<Object> {
 	@Override
 	public Object visitLiteralExpr(Expr.Literal expr){
 		return expr.value;
-	}
+  }
 
 	@Override
 	public Object visitUnaryExpr(Expr.Unary expr){
@@ -69,10 +70,21 @@ class Interpreter implements Expr.Visitor<Object> {
   	public Object visitVariableExpr(Expr.Variable expr) {
     	return environment.get(expr.name);
   	}
+  }
+  
+	@Override
+	public void visitWhileStmt(Stmt.While stmt){
+		while(isTruthy(evaluate(stmt.condition))){
+			execute(stmt.body);
+		}
+		return null;
+	} 
+
 
 	private Object evaluate(Expr expr){
 		return expr.accept(this);
 	}
+
 
 	void executeBlock(List<Stmt> statements, Environment environment) {
     	Environment previous = this.environment;
@@ -112,6 +124,7 @@ class Interpreter implements Expr.Visitor<Object> {
     	environment.assign(expr.name, value);
     	return value;
   	}
+
 
 	private boolean isTruthy(Object right){
 		if(right == null) return false;

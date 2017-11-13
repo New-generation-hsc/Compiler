@@ -15,6 +15,9 @@ import lexer.Scanner;
 import syntaxtree.Expr;
 import logger.ErrorHandler;
 
+
+import java.util.Arrays;
+
 public class Parser {
 
 	private Token token; // the current token that need to parse
@@ -51,6 +54,8 @@ public class Parser {
     	return expr;
   	}
 
+	}
+
 	// && || operation
 	private Expr logical(){
 
@@ -66,6 +71,7 @@ public class Parser {
 		return expr;
 	}
 
+
 	private List<Stmt> block() {
     	List<Stmt> statements = new ArrayList<>();
 
@@ -76,6 +82,7 @@ public class Parser {
     	consume(RIGHT_BRACE, "Expect '}' after block.");
     	return statements;
   	}
+
 
 	// != , ==
 	private Expr equality(){
@@ -169,6 +176,61 @@ public class Parser {
 		ErrorHandler.error(next.line, "Invalid expression");
 		System.exit(1);
 	}
+
+
+
+	// the while loop
+	private Stmt whileStatement(){
+		expect(Tag.LPAREN);
+		this.update();
+		System.out.println("accept the token -> " + token);
+		Expr condition = expression();
+		expect(Tag.RPAREN);
+		this.update();
+		System.out.println("accept the token -> " + token);
+		Stmt body = statement();
+		return new Stmt.While(condition.condition);
+	}
+
+	//if
+	private Stmt ifStatement(){
+		this.expect(Tag.LPAREN);
+		this.update();
+		Expr condition =expression();
+		this.expect(Tag.RPAREN);
+		this.update();
+		Stmt thenBranch=statement();
+		Stmt elseBranch=null;
+		if(accept(Tag.ELSE)){
+			this.update();
+			elseBranch=statement();
+		}
+		return new Stmt.If(condition,thenBranch,elseBranch);
+	}
+	// ||
+	private Expr or(){
+		Expr expr=and();
+		while(accept(Tag.OR)){
+			this.update();
+			Token operator=previous();
+			Expr right=and();
+			expr=new Expr.Logical(expr,operator,right);
+
+		}
+		return expr;
+	}
+	//&&
+	private Expr and(){
+		Expr expr=equality();
+		while(accept(Tag.AND)){
+			this.update();
+			Token operator=previous();
+			Expr right=equality();
+			expr=new Expr.Logical(expr,operator,right);
+		}
+		return expr;
+  }
+
 
 	public void update(){
 		token = next;
