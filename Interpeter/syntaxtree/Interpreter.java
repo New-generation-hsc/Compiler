@@ -46,7 +46,8 @@ class Interpreter implements Expr.Visitor<Object> {
 	@Override
 	public Object visitLiteralExpr(Expr.Literal expr){
 		return expr.value;
-	}
+  }
+
 
 	@Override
 	public Object visitUnaryExpr(Expr.Unary expr){
@@ -61,8 +62,8 @@ class Interpreter implements Expr.Visitor<Object> {
 
 		// Unreachable
 		return null;
-	}
-
+  }
+  
 	@Override
 	public void visitWhileStmt(Stmt.While stmt){
 		while(isTruthy(evaluate(stmt.condition))){
@@ -70,6 +71,7 @@ class Interpreter implements Expr.Visitor<Object> {
 		}
 		return null;
 	} 
+
 
 	private Object evaluate(Expr expr){
 		return expr.accept(this);
