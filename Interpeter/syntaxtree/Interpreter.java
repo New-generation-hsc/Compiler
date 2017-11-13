@@ -46,6 +46,16 @@ class Interpreter implements Expr.Visitor<Object> {
 	@Override
 	public Object visitLiteralExpr(Expr.Literal expr){
 		return expr.value;
+
+	@Override
+	public Object visitLogicalExpr(Expr.Logical expr){
+		Object left=evaluate(expr.left);
+		if(expr.operator.type==Tag.OR){
+			if(isTruthy(left)) return left;
+		} else{
+			if(!isTruthy(left)) return left;
+		}
+		return evaluate(expr.right);
 	}
 
 	@Override

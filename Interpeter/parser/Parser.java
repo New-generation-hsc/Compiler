@@ -141,6 +141,48 @@ public class Parser {
 		System.exit(1);
 	}
 
+	//if
+	private Stmt ifStatement(){
+		this.expect(Tag.LPAREN);
+		this.update();
+		Expr condition =expression();
+		this.expect(Tag.RPAREN);
+		this.update();
+		Stmt thenBranch=statement();
+		Stmt elseBranch=null;
+		if(accept(Tag.ELSE)){
+			this.update();
+			elseBranch=statement();
+		}
+		return new Stmt.If(condition,thenBranch,elseBranch);
+	}
+	// ||
+	private Expr or(){
+		Expr expr=and();
+		while(accept(Tag.OR)){
+			this.update();
+			Token operator=previous();
+			Expr right=and();
+			expr=new Expr.Logical(expr,operator,right);
+
+		}
+		return expr;
+	}
+	//&&
+	private Expr and(){
+		Expr expr=equality();
+		while(accept(Tag.AND)){
+			this.update();
+			Token operator=previous();
+			Expr right=equality();
+			expr=new Expr.Logical(expr,operator,right);
+		}
+		return expr;
+	}
+
+
+
+
 	public void update(){
 		token = next;
 		next = scanner.scan();
