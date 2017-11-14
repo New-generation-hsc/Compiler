@@ -47,6 +47,8 @@ public class Transform {
 				return Tag.STRUCT;
 			case "return":
 				return Tag.RETURN;
+			case "printf":
+				return Tag.PRINTF;
 			default:
 				return null;
 		}

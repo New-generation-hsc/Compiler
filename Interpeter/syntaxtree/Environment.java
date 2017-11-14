@@ -2,16 +2,20 @@ package syntaxtree;
 
 import java.util.HashMap;
 import java.util.Map;
+import exception.RuntimeError;
 
-class Environment {
-	final Environment enclosing;
+import lexer.Token;
+
+public class Environment {
+
+	public final Environment enclosing;
   	private final Map<String, Object> values = new HashMap<>();
 
-  	void define(String name, Object value) {
+  	public void define(String name, Object value) {
     	values.put(name, value);
   	}
 
- 	Object get(Token name) {
+ 	public Object get(Token name) {
     	if (values.containsKey(name.lexeme)) {
       		return values.get(name.lexeme);
     	}
@@ -21,7 +25,7 @@ class Environment {
     	throw new RuntimeError(name,"Undefined variable '" + name.lexeme + "'.");
   	}
 
-  	void assign(Token name, Object value) {
+  	public void assign(Token name, Object value) {
     	if (values.containsKey(name.lexeme)) {
       		values.put(name.lexeme, value);
       		return;
@@ -40,11 +44,11 @@ class Environment {
     	throw new RuntimeError(name,"Undefined variable '" + name.lexeme + "'.");
   	}
 
-  	Environment() {
+  	public Environment() {
     	enclosing = null;
   	}
 
-  	Environment(Environment enclosing) {
+  	public Environment(Environment enclosing) {
     	this.enclosing = enclosing;
   	}
 }

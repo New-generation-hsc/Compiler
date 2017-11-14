@@ -13,10 +13,14 @@ import lexer.Token;
 import lexer.Scanner;
 
 import syntaxtree.Expr;
+import syntaxtree.Stmt;
 import logger.ErrorHandler;
 
-
+import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
+
+import exception.TypeCastException;
 
 public class Parser {
 
@@ -28,33 +32,107 @@ public class Parser {
 		scanner = new Scanner();
 		token = null;
 		next = scanner.scan(); // get the first token
-		System.out.println(next);
-		logger = Logger.getLogger(Scanner.class.getName());
 	}
+
+	public List<Stmt> parse(){
+
+		List<Stmt> statements = new ArrayList<>();
+
+		while(next != null){
+			statements.add(declaration());
+		}
+
+		return statements;
+	}
+
+	private Stmt declaration(){
+
+		if(accept(Tag.INT) || accept(Tag.CHAR) || accept(Tag.DOUBLE) || accept(Tag.FLOAT)){
+			this.update();
+			return varDeclaration();
+		}
+
+		return statement();
+	}
+
+	private Stmt varDeclaration(){
+		expect(Tag.ID);
+		Token name = next;
+		this.update();
+
+		Expr initializer = null;
+		if(accept(Tag.ASSIGN)){
+			this.update();
+			initializer = expression();
+		}
+
+		expect(Tag.SEMICOLON);
+		this.update();
+
+		return new Stmt.Var(name, initializer);
+	}
+
+	private Stmt statement(){
+		if(accept(Tag.PRINTF)){
+			this.update();
+			expect(Tag.LPAREN);
+			this.update();
+			Stmt stmt = printfStatement();
+			expect(Tag.RPAREN);
+			this.update();
+			expect(Tag.SEMICOLON);
+			this.update();
+
+			return stmt;
+		}
+
+		return expressionStatement();
+	}
+
+	private Stmt printfStatement(){
+		Expr value = expression();
+
+		return new Stmt.Printf(value);
+	}
+
+	private Stmt expressionStatement(){
+		Expr expr = expression();
+		expect(Tag.SEMICOLON);
+		this.update();
+		return new Stmt.Expression(expr);
+	}
+
+	// private Stmt expressionStatement(){
+	// 	Expr expr = expression();
+
+	// 	expect(Tag.SEMICOLON);
+	// 	this.update();
+
+	// 	return new Stmt.Expression(expr);
+	// }
 
 	private Expr expression(){
-		return assignment();
+		return logical();
 	}
 
-	private Expr assignment() {
-    	Expr expr = equality();
+	// private Expr assignment() {
 
-    	if (match(EQUAL)) {
-      		Token equals = previous();
-      		Expr value = assignment();
+ //    	Expr expr = equality();
 
-      		if (expr instanceof Expr.Variable) {
-        		Token name = ((Expr.Variable)expr).name;
-        		return new Expr.Assign(name, value);
-      		}
+ //    	if (match(EQUAL)) {
+ //      		Token equals = previous();
+ //      		Expr value = assignment();
 
-      		error(equals, "Invalid assignment target.");
-    		}
+ //      		if (expr instanceof Expr.Variable) {
+ //        		Token name = ((Expr.Variable)expr).name;
+ //        		return new Expr.Assign(name, value);
+ //      		}
 
-    	return expr;
-  	}
+ //      		error(equals, "Invalid assignment target.");
+ //    		}
 
-	}
+ //    	return expr;
+	// }
 
 	// && || operation
 	private Expr logical(){
@@ -72,16 +150,16 @@ public class Parser {
 	}
 
 
-	private List<Stmt> block() {
-    	List<Stmt> statements = new ArrayList<>();
+	// private List<Stmt> block() {
+ //    	List<Stmt> statements = new ArrayList<>();
 
-    	while (!check(RIGHT_BRACE) && !isAtEnd()) {
-      		statements.add(declaration());
-    	}
+ //    	while (!check(RIGHT_BRACE) && !isAtEnd()) {
+ //      		statements.add(declaration());
+ //    	}
 
-    	consume(RIGHT_BRACE, "Expect '}' after block.");
-    	return statements;
-  	}
+ //    	consume(RIGHT_BRACE, "Expect '}' after block.");
+ //    	return statements;
+ //  	}
 
 
 	// != , ==
@@ -118,7 +196,7 @@ public class Parser {
 	private Expr addition(){
 
 		Expr expr = multiplication();
-		while(accept(Tag.PLUS) || accept(Tag.MINUS))){
+		while(accept(Tag.PLUS) || accept(Tag.MINUS)){
 			this.update();
 			System.out.println("accept the token -> " + token);
 			Token operator = token;
@@ -168,68 +246,85 @@ public class Parser {
 		}
 
 		if(accept(Tag.LPAREN)){
+			this.update();
 			Expr expr = expression();
 			expect(Tag.RPAREN);
+			this.update();
 			return new Expr.Grouping(expr);
 		}
 
+		if(accept(Tag.ID)){
+			Token name = next;
+			this.update();
+			return new Expr.Variable(name);
+		}
+
+		System.out.println(next);
 		ErrorHandler.error(next.line, "Invalid expression");
 		System.exit(1);
+
+		// unreachable
+		return null;
 	}
 
 
 
-	// the while loop
-	private Stmt whileStatement(){
-		expect(Tag.LPAREN);
-		this.update();
-		System.out.println("accept the token -> " + token);
-		Expr condition = expression();
-		expect(Tag.RPAREN);
-		this.update();
-		System.out.println("accept the token -> " + token);
-		Stmt body = statement();
-		return new Stmt.While(condition.condition);
-	}
+	// // the while loop
+	// private Stmt whileStatement(){
+	// 	expect(Tag.LPAREN);
+	// 	this.update();
+	// 	System.out.println("accept the token -> " + token);
+	// 	Expr condition = expression();
+	// 	expect(Tag.RPAREN);
+	// 	this.update();
+	// 	System.out.println("accept the token -> " + token);
+	// 	Stmt body = statement();
+	// 	return new Stmt.While(condition.condition);
+	// }
 
-	//if
-	private Stmt ifStatement(){
-		this.expect(Tag.LPAREN);
-		this.update();
-		Expr condition =expression();
-		this.expect(Tag.RPAREN);
-		this.update();
-		Stmt thenBranch=statement();
-		Stmt elseBranch=null;
-		if(accept(Tag.ELSE)){
-			this.update();
-			elseBranch=statement();
-		}
-		return new Stmt.If(condition,thenBranch,elseBranch);
-	}
-	// ||
-	private Expr or(){
-		Expr expr=and();
-		while(accept(Tag.OR)){
-			this.update();
-			Token operator=previous();
-			Expr right=and();
-			expr=new Expr.Logical(expr,operator,right);
+	// //if
+	// private Stmt ifStatement(){
 
-		}
-		return expr;
-	}
-	//&&
-	private Expr and(){
-		Expr expr=equality();
-		while(accept(Tag.AND)){
-			this.update();
-			Token operator=previous();
-			Expr right=equality();
-			expr=new Expr.Logical(expr,operator,right);
-		}
-		return expr;
-  }
+	// 	this.expect(Tag.LPAREN);
+	// 	this.update();
+	// 	Expr condition =expression();
+	// 	this.expect(Tag.RPAREN);
+	// 	this.update();
+	// 	Stmt thenBranch=statement();
+	// 	Stmt elseBranch=null;
+	// 	if(accept(Tag.ELSE)){
+	// 		this.update();
+	// 		elseBranch=statement();
+	// 	}
+	// 	return new Stmt.If(condition,thenBranch,elseBranch);
+	// }
+
+	// // ||
+	// private Expr or(){
+
+	// 	Expr expr=and();
+	// 	while(accept(Tag.OR)){
+	// 		this.update();
+	// 		Token operator=previous();
+	// 		Expr right=and();
+	// 		expr=new Expr.Logical(expr,operator,right);
+
+	// 	}
+	// 	return expr;
+	// }
+	// //&&
+	// private Expr and(){
+
+	// 	Expr expr=equality();
+
+	// 	while(accept(Tag.AND)){
+	// 		this.update();
+	// 		Token operator=previous();
+	// 		Expr right=equality();
+	// 		expr=new Expr.Logical(expr,operator,right);
+	// 	}
+	// 	return expr;
+ // 	}
 
 
 	public void update(){
@@ -257,14 +352,6 @@ public class Parser {
 	 * @param symbol the expected Tag
 	 */
 	public void expect(Tag symbol){
-		if(!accept(symbol)) error("Missing the symbol <" + symbol.toString() + ">.");
-	}
-
-	/**
-	 * using the logging module to print the error when parse c program
-	 * @param the error message
-	 */
-	public void error(String message){
-		logger.severe(message);
+		if(!accept(symbol)) ErrorHandler.error(next.line, "Missing the symbol <" + symbol.toString() + ">.");
 	}
 }
