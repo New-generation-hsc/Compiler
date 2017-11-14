@@ -3,8 +3,12 @@ package syntaxtree;
 import java.util.HashMap;
 import java.util.Map;
 import exception.RuntimeError;
+import exception.TypeMatchError;
 
 import lexer.Token;
+import lexer.Tag;
+
+import utils.Transform;
 
 public class Environment {
 
@@ -26,6 +30,9 @@ public class Environment {
   	}
 
   	public void assign(Token name, Object value) {
+  		
+  		value = Transform.compatiable(name, value);
+
     	if (values.containsKey(name.lexeme)) {
       		values.put(name.lexeme, value);
       		return;
@@ -33,12 +40,7 @@ public class Environment {
 
     	if (enclosing != null) {
     		enclosing.assign(name, value);
-      	return;
-    	}
-
-    	if (enclosing != null) {
-      		enclosing.assign(name, value);
-      	return;
+      		return;
     	}
     	
     	throw new RuntimeError(name,"Undefined variable '" + name.lexeme + "'.");

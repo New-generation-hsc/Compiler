@@ -7,6 +7,9 @@ package logger;
 import java.util.logging.Logger;
 import exception.TypeCastException;
 import exception.RuntimeError;
+import exception.TypeMatchError;
+
+import utils.Resolve;
 
 public class ErrorHandler {
 
@@ -24,5 +27,12 @@ public class ErrorHandler {
 
 	public static void patternMatchError(TypeCastException error){
 		Logger.getLogger(ErrorHandler.class.getName()).severe("<line " + error.token.line + "> Error: " + error.getMessage());
+	}
+
+	public static void typeMatchError(TypeMatchError error){
+		String left = Resolve.resolve(error.left);
+		String right = Resolve.resolve(error.right);
+
+		Logger.getLogger(ErrorHandler.class.getName()).severe("<line " + error.line + "> Error: " + error.getMessage() + " '" + right + "' -> '" + left + "'");
 	}
 }

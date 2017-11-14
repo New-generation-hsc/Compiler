@@ -3,17 +3,36 @@
  * a very simple c program, just for test
  */
 
-1 + 5 * 6;
+int a = 3;
+double b = 3.1415;
 
-printf("just soemthing");
-printf(1 + 5 * 6);
+{
+	int a = 4;
+	printf(a);
+	printf(b);
 
-int a = 5;
-int b = 6;
+	double b = 5.12;
+	printf(b);
+}
 
-double c = 3.14;
-char d = 'c';
+{
+	double a = 3.14;
 
-printf(a + b * 2);
-printf(c * 2 + a * b);
-printf(d * c);
+	{
+		int a = 5;
+		printf(a);
+	}
+
+	printf(a);
+}
+
+printf(a);
+
+while(a > 0){
+	printf("hello world");
+	a = a - 1;
+}
+
+for(int i = 0; i < 5; i = i + 1){
+	printf("for statement");
+}
