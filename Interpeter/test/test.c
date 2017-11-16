@@ -23,10 +23,20 @@ double b = 3.1415;
 		printf(a);
 	}
 
+	//int a = 3;
+
 	printf(a);
 }
 
+//int f = 'a';
+
 printf(a);
+
+if(a > 0){
+	printf("if");
+}else{
+	printf("else");
+}
 
 while(a > 0){
 	printf("hello world");
@@ -36,3 +46,6 @@ while(a > 0){
 for(int i = 0; i < 5; i = i + 1){
 	printf("for statement");
 }
+
+// int e = q = 2;
+// printf(q);

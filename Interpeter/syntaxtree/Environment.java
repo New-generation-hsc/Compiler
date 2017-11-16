@@ -16,6 +16,12 @@ public class Environment {
   	private final Map<String, Object> values = new HashMap<>();
 
   	public void define(String name, Object value) {
+
+      if(values.containsKey(name)){
+        System.out.println("Duplicate define");
+        System.exit(1);
+      }
+
     	values.put(name, value);
   	}
 
