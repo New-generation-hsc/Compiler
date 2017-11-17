@@ -1,0 +1,24 @@
+push constant 3
+pop static 0
+push constant 4
+pop static 1
+push static 0
+push static 1
+add
+pop static 2
+push static 0
+push static 1
+gt
+not
+if-goto L1
+push static 2
+push static 0
+sub
+pop static 2
+goto L2
+label L1
+push static 2
+push static 0
+add
+pop static 2
+label L2

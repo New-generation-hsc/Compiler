@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import exception.TypeCastException;
 import exception.RuntimeError;
 import exception.TypeMatchError;
+import exception.UnAssignmentError;
 
 import utils.Resolve;
 
@@ -34,5 +35,9 @@ public class ErrorHandler {
 		String right = Resolve.resolve(error.right);
 
 		Logger.getLogger(ErrorHandler.class.getName()).severe("<line " + error.line + "> Error: " + error.getMessage() + " '" + right + "' -> '" + left + "'");
+	}
+
+	public static void unAssignmentError(UnAssignmentError error){
+		Logger.getLogger(ErrorHandler.class.getName()).severe("<line " + error.name.line + "> Error: " + "variable must be assigned before reference");
 	}
 }

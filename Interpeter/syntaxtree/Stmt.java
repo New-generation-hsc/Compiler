@@ -6,13 +6,43 @@ import java.util.List;
 public abstract class Stmt {
 
 
- 	interface Visitor<R> {
+ 	public interface Visitor<R> {
         public R visitExpressionStmt(Expression expr);
         public R visitPrintfStmt(Printf print);
         public R visitVarStmt(Var stmt);
         public R visitBlockStmt(Block stmt);
         public R visitIfStmt(Stmt.If stmt);
         public R visitWhileStmt(Stmt.While stmt);
+        public R visitArrStmt(Stmt.ArrStmt stmt);
+        public R visitFunctionStmt(Stmt.Function stmt);
+        public R visitReturnStmt(Stmt.Return stmt);
+    }
+
+     public static class Function extends Stmt{
+        public Function(Token name, List<Token> parameters, List<Stmt> body){
+            this.name=name;
+            this.parameters=parameters;
+            this.body=body;
+        }
+        public <R> R accept(Visitor<R> visitor){
+            return visitor.visitFunctionStmt(this);
+        }
+        public final Token name;
+        public final List<Token> parameters;
+        public final List<Stmt> body;
+    }
+
+    public static class Return extends Stmt{
+        public Return(Expr value){
+            //this.keyword = keyword;
+            this.value = value;
+        }
+        public <R> R accept(Visitor<R> visitor){
+            return visitor.visitReturnStmt(this);
+        }
+
+        //final Token keyword;
+        public final Expr value;
     }
 
 	public static class Expression extends Stmt {
@@ -58,6 +88,21 @@ public abstract class Stmt {
         public final Expr initializer;
     }
 
+    public static class ArrStmt extends Stmt {
+
+        public ArrStmt(Token name, int length){
+            this.name = name;
+            this.length = length;
+        }
+
+        public <R> R accept(Visitor<R> visitor){
+            return visitor.visitArrStmt(this);
+        }
+
+        public final Token name;
+        public final int length;
+    }
+
     public static class Block extends Stmt {
 
         public Block(List<Stmt> statements){
@@ -68,7 +113,7 @@ public abstract class Stmt {
             return visitor.visitBlockStmt(this);
         }
 
-        final List<Stmt> statements;
+        public final List<Stmt> statements;
     }
 
     public static class If extends Stmt {
@@ -83,9 +128,9 @@ public abstract class Stmt {
             return visitor.visitIfStmt(this);
         }
 
-        final Expr condition;
-        final Stmt thenBranch;
-        final Stmt elseBranch;
+        public final Expr condition;
+        public final Stmt thenBranch;
+        public final Stmt elseBranch;
     }
 
     public static class While extends Stmt {
@@ -99,8 +144,8 @@ public abstract class Stmt {
             return visitor.visitWhileStmt(this);
         }
 
-        final Expr condition;
-        final Stmt body;
+        public final Expr condition;
+        public final Stmt body;
     }
 
     public abstract <R> R accept(Visitor<R> visitor);

@@ -55,40 +55,42 @@ public class Transform {
 				return Tag.FOR;
 			case "printf":
 				return Tag.PRINTF;
+			case "func":
+				return Tag.FUNC;
 			default:
 				return null;
 		}
 	}
 
-	public static Object compatiable(Token name, Object value){
+	// public static Object compatiable(Attribute attr, Attribute value){
 
-		try{
-			if(name.type.equals(solve(value)))
-  				return value;
+	// 	// try{
+	// 	// 	if(name.tag.equals(value.tag))
+ //  // 				return true;
 
-	  		if(name.type.equals(Tag.CHAR) ^ (value instanceof Character))
-	  			throw new TypeMatchError(name.type, solve(value), name.line, "type cast failed");
+	//  //  		if(name.tag.equals(Tag.CHAR) ^ (value.tag.equals(Tag.CHAR))
+	//  //  			throw new TypeMatchError(name.type, value.tag, name.line, "type cast failed");
 
-	  		if(name.type.equals(Tag.DOUBLE) && (value instanceof Integer)){
-	  			Integer object = (Integer) value;
-	  			return new Double(object.intValue());
-	  		}
+	//  //  		if(name.type.equals(Tag.DOUBLE) && (value.tag.equals(Tag.Integer))){
+	//  //  			Integer object = (Integer) value;
+	//  //  			return new Double(object.intValue());
+	//  //  		}
 
-	  		if(name.type.equals(Tag.INT) && (value instanceof Double)){
-	  			String text = value.toString();
-	  			Double object = (Double) value;
-	  			if(text.endsWith(".0"))
-	  				return new Integer((int)object.doubleValue());
-	  			throw new TypeMatchError(name.type, solve(value), name.line, "type cast failed");
-	  		}
-		}catch(TypeMatchError error){
-			ErrorHandler.typeMatchError(error);
-			System.exit(1);
-		}
+	//  //  		if(name.type.equals(Tag.INT) && (value instanceof Double)){
+	//  //  			String text = value.toString();
+	//  //  			Double object = (Double) value;
+	//  //  			if(text.endsWith(".0"))
+	//  //  				return new Integer((int)object.doubleValue());
+	//  //  			throw new TypeMatchError(name.type, solve(value), name.line, "type cast failed");
+	//  //  		}
+	// 	// }catch(TypeMatchError error){
+	// 	// 	ErrorHandler.typeMatchError(error);
+	// 	// 	System.exit(1);
+	// 	// }
 
-  		// unreachable
-  		return value;
-  	}
+ //  		// unreachable
+ //  		return value;
+ //  	}
 
   	public static Tag solve(Object value){
   		if(value instanceof Integer)

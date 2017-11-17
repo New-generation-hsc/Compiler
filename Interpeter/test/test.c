@@ -3,36 +3,37 @@
  * a very simple c program, just for test
  */
 
-int a = 3;
-double b = 3.1415;
+// int a = 3;
+// int b = 4;
 
-{
-	int a = 4;
-	printf(a);
-	printf(b);
+// int c = a + b;
 
-	double b = 5.12;
-	printf(b);
+// // func int sum(int a, int b){
+// // 	int c;
+// // 	int d;
+// // 	c = a + b;
+// // 	d = c + 2;
+// // 	return d;
+// // }
+
+// // int d = sum(1, 2);
+
+// // func int sub(int a){
+// // 	int c;
+// // 	c = 10 - a;
+// // 	return c;
+// // }
+
+// // d = sub(6);
+
+// printf(5);
+// 
+
+func int main(int a, int b){
+
+	int c = a + b;
+	printf(c);
+	return c;
 }
 
-{
-	double a = 3.14;
-
-	{
-		int a = 5;
-		printf(a);
-	}
-
-	printf(a);
-}
-
-printf(a);
-
-while(a > 0){
-	printf("hello world");
-	a = a - 1;
-}
-
-for(int i = 0; i < 5; i = i + 1){
-	printf("for statement");
-}
+int d = main(5, 6.23);

@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 
 import exception.TypeCastException;
+import generation.SymbolTable;
 
 public class Parser {
 
@@ -49,10 +50,33 @@ public class Parser {
 
 		if(accept(Tag.INT) || accept(Tag.CHAR) || accept(Tag.DOUBLE) || accept(Tag.FLOAT)){
 			this.update();
+			if(accept(Tag.LBRACKET))
+				return arrDeclaration();
 			return varDeclaration();
 		}
 
 		return statement();
+	}
+
+	public Stmt arrDeclaration(){
+		Tag type = token.type; // record the type of current array
+
+		expect(Tag.LBRACKET);
+		this.update();
+		expect(Tag.NUM);
+		this.update();
+		Integer length = (Integer)token.literal;
+		expect(Tag.RBRACKET);
+		this.update();
+
+		expect(Tag.ID);
+		this.update();
+		Token name = new Token(type, token.lexeme, token.literal, token.line);
+
+		expect(Tag.SEMICOLON);
+		this.update();
+
+		return new Stmt.ArrStmt(name, length);
 	}
 
 	private Stmt varDeclaration(){
@@ -87,6 +111,10 @@ public class Parser {
 			return stmt;
 		}
 
+		if(accept(Tag.FUNC)){
+			return function();
+		}
+
 		if(accept(Tag.LBRACE)){
 			this.update();
 			return new Stmt.Block(block());
@@ -107,18 +135,79 @@ public class Parser {
 			return forStatement();
 		}
 
+		if(accept(Tag.RETURN)) {
+			this.update();
+			return returnStatement();
+		}
+
 		return expressionStatement();
+	}
+
+	private Stmt returnStatement(){
+
+		Expr expr = expression();
+		expect(Tag.SEMICOLON);
+		this.update();
+
+		return new Stmt.Return(expr);
+	}
+
+	private Stmt function(){
+		this.update();
+
+		if(!(accept(Tag.INT) || accept(Tag.DOUBLE) || accept(Tag.CHAR))){
+			ErrorHandler.error(token.line, "Missing the keyword");
+			System.exit(1);
+		}
+
+		this.update();
+
+		expect(Tag.ID);
+		this.update();
+
+		Token identifier = token;
+
+		expect(Tag.LPAREN);
+		this.update();
+		List<Token> parameters = new ArrayList<>();
+		if(!accept(Tag.RPAREN)){
+			do {
+				if(accept(Tag.COMMA))
+					this.update();
+				if(accept(Tag.INT) || accept(Tag.DOUBLE) || accept(Tag.CHAR)){
+					this.update();
+				}else {
+					System.out.println("Missing the keyword for function");
+					System.exit(1);
+				}
+
+				Tag tag = token.type;
+				expect(Tag.ID);
+				this.update();
+				Token param = new Token(tag, token.lexeme, token.literal, token.line);
+				parameters.add(param);
+			}while(accept(Tag.COMMA));
+		}
+
+		expect(Tag.RPAREN);
+		this.update();
+
+		expect(Tag.LBRACE);
+		this.update();
+
+		List<Stmt> body = block();
+		return new Stmt.Function(identifier, parameters, body);
 	}
 
 	// the while loop
 	private Stmt whileStatement(){
 		expect(Tag.LPAREN);
 		this.update();
-		System.out.println("accept the token -> " + token);
+		//System.out.println("accept the token -> " + token);
 		Expr condition = expression();
 		expect(Tag.RPAREN);
 		this.update();
-		System.out.println("accept the token -> " + token);
+		//System.out.println("accept the token -> " + token);
 		Stmt body = statement();
 
 		return new Stmt.While(condition, body);
@@ -195,7 +284,7 @@ public class Parser {
 		return new Stmt.If(condition, thenBranch, elseBranch);
 	}
 
-	private List<Stmt> block() {
+	private List<Stmt> block() {	
     	List<Stmt> statements = new ArrayList<>();
 
     	while (!accept(Tag.RBRACE)) {
@@ -204,6 +293,7 @@ public class Parser {
 
     	expect(Tag.RBRACE);
     	this.update();
+
     	return statements;
   	}
 
@@ -237,6 +327,9 @@ public class Parser {
       		if (expr instanceof Expr.Variable) {
         		Token name = ((Expr.Variable)expr).name;
         		return new Expr.Assign(name, value);
+      		}else if(expr instanceof Expr.Array){
+      			Expr.Array arr = (Expr.Array)expr;
+      			return new Expr.AssignArray(arr.name, value, arr.index);
       		}
 
       		ErrorHandler.error(equals.line, "Invalid assignment target");
@@ -267,7 +360,7 @@ public class Parser {
 		Expr expr = comparison();
 		while(accept(Tag.NE) || accept(Tag.EQ)){
 			this.update();
-			System.out.println("accept the token -> " + token);
+			//System.out.println("accept the token -> " + token);
 			Token operator = token;
 			Expr right = comparison();
 			expr = new Expr.Binary(expr, operator, right);
@@ -282,7 +375,7 @@ public class Parser {
 		Expr expr = addition();
 		while(accept(Tag.LT) || accept(Tag.LE) || accept(Tag.GT) || accept(Tag.GE)){
 			this.update();
-			System.out.println("accept the token -> " + token);
+			//System.out.println("accept the token -> " + token);
 			Token operator = token;
 			Expr right = addition();
 			expr = new Expr.Binary(expr, operator, right);
@@ -297,7 +390,7 @@ public class Parser {
 		Expr expr = multiplication();
 		while(accept(Tag.PLUS) || accept(Tag.MINUS)){
 			this.update();
-			System.out.println("accept the token -> " + token);
+			//System.out.println("accept the token -> " + token);
 			Token operator = token;
 			Expr right = multiplication();
 			expr = new Expr.Binary(expr, operator, right);
@@ -312,7 +405,7 @@ public class Parser {
 		Expr expr = unary();
 		while(accept(Tag.MUL) || accept(Tag.SLASH)){
 			this.update();
-			System.out.println("accept the token -> " + token);
+			//System.out.println("accept the token -> " + token);
 			Token operator = token;
 			Expr right = unary();
 			expr = new Expr.Binary(expr, operator, right);
@@ -326,13 +419,48 @@ public class Parser {
 
 		if(accept(Tag.NOT) || accept(Tag.MINUS)){
 			this.update();
-			System.out.println("accept the token -> " + token);
+			//System.out.println("accept the token -> " + token);
 			Token operator = token;
 			Expr right = primary();
 			return new Expr.Unary(operator, right);
 		}
 
-		return primary();
+		return call();
+	}
+
+	// call function
+	private Expr call(){
+		Expr expr = primary();
+
+		while(true){
+			if(accept(Tag.LPAREN)){
+				this.update();
+				//System.out.println("the next token -> " + next);
+				expr = finishCall(expr);
+			}else {
+				break;
+			}
+		}
+
+		return expr;
+	}
+
+	private Expr finishCall(Expr callee){
+		List<Expr> arguments = new ArrayList<>();
+
+		if(!accept(Tag.RPAREN)){
+			do {
+				if(accept(Tag.COMMA))
+					this.update();
+				//System.out.println("current token -> " + token);
+				arguments.add(expression());
+			}while(accept(Tag.COMMA));
+		}
+
+		expect(Tag.RPAREN);
+		this.update();
+
+		return new Expr.Call(callee, arguments);
 	}
 
 	// the basic element
@@ -340,7 +468,7 @@ public class Parser {
 
 		if(accept(Tag.NUM) || accept(Tag.REAL) || accept(Tag.CHARACTER) || accept(Tag.STRING)){
 			this.update();
-			System.out.println("accept the token -> " + token);
+			//System.out.println("accept the token -> " + token);
 			return new Expr.Literal(token.literal);
 		}
 
@@ -355,10 +483,23 @@ public class Parser {
 		if(accept(Tag.ID)){
 			Token name = next;
 			this.update();
+			if(accept(Tag.LBRACKET)){
+				this.update();
+				expect(Tag.NUM);
+				this.update();
+
+				Integer length = (Integer)token.literal;
+				expect(Tag.RBRACKET);
+				this.update();
+
+				//System.out.println("return the array expression");
+				return new Expr.Array(name, length);
+			}
+			
 			return new Expr.Variable(name);
 		}
 
-		System.out.println(next);
+		//System.out.println(next);
 		ErrorHandler.error(next.line, "Invalid expression");
 		System.exit(1);
 

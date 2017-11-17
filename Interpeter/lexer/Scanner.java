@@ -84,7 +84,7 @@ public class Scanner {
 			case '\"': return recognize_string();
 			case '=': pos++; if(next('=')) return new Token(Tag.EQ, "==", null, line); else return new Token(Tag.ASSIGN, "=", null, line);
 			case '<': pos++; if(next('=')) return new Token(Tag.LE, "<=", null, line); else return new Token(Tag.LT, "<", null, line);
-			case '>': pos++; if(next('=')) return new Token(Tag.GT, ">=", null, line); else return new Token(Tag.GE, ">", null, line);
+			case '>': pos++; if(next('=')) return new Token(Tag.GE, ">=", null, line); else return new Token(Tag.GT, ">", null, line);
 			case '!': pos++; if(next('=')) return new Token(Tag.NE, "!=", null, line); else return new Token(Tag.NOT, "!", null, line);
 			case '+':
 				pos++; // fetch the next char
