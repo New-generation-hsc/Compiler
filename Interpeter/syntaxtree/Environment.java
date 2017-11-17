@@ -23,6 +23,16 @@ public class Environment {
           System.exit(1);
       }
 
+<<<<<<< HEAD
+=======
+  	public void define(String name, Object value) {
+
+      if(values.containsKey(name)){
+        System.out.println("Duplicate define");
+        System.exit(1);
+      }
+
+>>>>>>> b1b9c30301ed2e62e4f88dbd1cb4cacdabae4a45
     	values.put(name, value);
   	}
 
